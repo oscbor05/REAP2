@@ -18,9 +18,9 @@ def assess_property_complexity(revenue, expectation, amenities, projects):
     Assess the complexity of a property based on user inputs and predefined scoring system.
     """
     # Assign Revenue Alpha Code
-    if revenue < 20000000:
+    if revenue < 750000:
         revenue_code = "L"
-    elif 20000000 <= revenue <= 30000000:
+    elif 750000 <= revenue <= 1100000:
         revenue_code = "M"
     else:
         revenue_code = "H"
@@ -33,20 +33,16 @@ def assess_property_complexity(revenue, expectation, amenities, projects):
     }
     e_score = expectation_mapping.get(expectation, 1)
     
-    # Assign Amenities Score (Allow 0 for no amenities)
-    if amenities == 0:
-        a_score = 0
-    elif 1 <= amenities <= 3:
+    # Assign Amenities Score
+    if amenities <= 3:
         a_score = 1
     elif 4 <= amenities <= 5:
         a_score = 2
     else:
         a_score = 3
     
-    # Assign Projects Score (Allow 0 for no projects)
-    if projects == 0:
-        p_score = 0
-    elif 1 <= projects <= 2:
+    # Assign Projects Score
+    if projects <= 2:
         p_score = 1
     elif 3 <= projects <= 5:
         p_score = 2
@@ -56,11 +52,11 @@ def assess_property_complexity(revenue, expectation, amenities, projects):
     # Total Complexity Score
     total_score = e_score + a_score + p_score
     
-    # Assign Complexity Classification with exact numeric score
-    complexity_score = str(total_score)
-    final_classification = f"{revenue_code}{complexity_score}"
+    # Assign Complexity Classification
+    final_classification = f"{revenue_code}{total_score}"
     
     return {
+        "Property Name": property_name,
         "Revenue Code": revenue_code,
         "Total Score": total_score,
         "Complexity Classification": final_classification
@@ -74,8 +70,7 @@ input_method = st.radio("Select how you want to input data:", ("Manual Entry", "
 
 def plot_complexity_chart(results_df):
     """ Generate and display an XY chart mapping properties by revenue and complexity score. """
-    revenue_mapping = {"L": 15000000, "M": 25000000, "H": 35000000}
-    
+    revenue_mapping = {"L": 500000, "M": 925000, "H": 1500000}
     results_df["Revenue Numeric"] = results_df["Revenue Code"].map(revenue_mapping)
     
     plt.figure(figsize=(8, 6))
@@ -84,10 +79,10 @@ def plot_complexity_chart(results_df):
     for i, row in results_df.iterrows():
         plt.text(row["Revenue Numeric"], row["Total Score"], row["Property Name"], fontsize=9, ha='right')
     
-    plt.xlabel("Total Revenue ($)")
+    plt.xlabel("Revenue ($)")
     plt.ylabel("Operational Management Intensity (1-9)")
     plt.title("Property Complexity Mapping")
-    plt.xticks([15000000, 25000000, 35000000], labels=["L (<$20M)", "M ($20M-$30M)", "H (>$30M)"])
+    plt.xticks([500000, 925000, 1500000], labels=["L ($500K)", "M ($925K)", "H ($1.5M+)"])
     plt.yticks(range(1, 10))
     plt.grid(True)
     st.pyplot(plt)
@@ -148,7 +143,6 @@ else:
 
     if st.button("Assess Complexity"):
         result = assess_property_complexity(revenue, expectation, amenities, projects)
-        result["Property Name"] = property_name
         result_df = pd.DataFrame([result])
         st.write("### Complexity Assessment Result")
         st.dataframe(result_df)
