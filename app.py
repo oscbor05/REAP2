@@ -1,0 +1,129 @@
+import streamlit as st
+import pandas as pd
+
+# Check for required dependencies
+missing_dependencies = []
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    missing_dependencies.append("matplotlib")
+
+try:
+    import openpyxl
+except ImportError:
+    missing_dependencies.append("openpyxl")
+
+if missing_dependencies:
+    st.error(f"Missing dependencies: {', '.join(missing_dependencies)}. Install them using `pip install {' '.join(missing_dependencies)}`.")
+    st.stop()
+
+def assess_property_complexity(revenue, expectation, amenities, projects):
+    """
+    Assess the complexity of a property based on user inputs and predefined scoring system.
+    """
+    # Assign Revenue Alpha Code
+    if revenue < 750000:
+        revenue_code = "L"
+    elif 750000 <= revenue <= 1100000:
+        revenue_code = "M"
+    else:
+        revenue_code = "H"
+    
+    # Assign Expectation Score
+    expectation_mapping = {
+        "Standard Service (No major escalations, normal response times)": 1,
+        "New Client (Onboarding within 90 days, increased operational oversight)": 3,
+        "High-Touch Service Model (Hospitality-driven OR NPS Detractor)": 2
+    }
+    e_score = expectation_mapping.get(expectation, 1)
+    
+    # Assign Amenities Score
+    if amenities <= 3:
+        a_score = 1
+    elif 4 <= amenities <= 5:
+        a_score = 2
+    else:
+        a_score = 3
+    
+    # Assign Projects Score
+    if projects <= 2:
+        p_score = 1
+    elif 3 <= projects <= 5 or projects == 1:
+        p_score = 2
+    else:
+        p_score = 3
+    
+    # Total Complexity Score
+    total_score = e_score + a_score + p_score
+    
+    # Assign Complexity Classification
+    if total_score <= 4:
+        complexity_score = "1"
+    elif 5 <= total_score <= 6:
+        complexity_score = "3"
+    elif 7 <= total_score <= 8:
+        complexity_score = "6"
+    else:
+        complexity_score = "9"
+    
+    final_classification = f"{revenue_code}{complexity_score}"
+    
+    return {
+        "Total Score": total_score,
+        "Complexity Classification": final_classification
+    }
+
+# Streamlit App
+st.title("KWPMC REAP Calculator")
+
+st.subheader("Choose Input Method")
+input_method = st.radio("Select how you want to input data:", ("Manual Entry", "Upload Excel File"))
+
+if input_method == "Upload Excel File":
+    st.subheader("Upload Excel File for Bulk Assessment")
+    uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx", "xls"])
+    
+    if uploaded_file is not None:
+        try:
+            df = pd.read_excel(uploaded_file, engine="openpyxl")
+            
+            required_columns = ["Property Name", "Revenue", "Expectation", "Amenities", "Projects"]
+            if all(col in df.columns for col in required_columns):
+                results = []
+                complexity_counts = {"L1": 0, "L3": 0, "L6": 0, "L9": 0, "M1": 0, "M3": 0, "M6": 0, "M9": 0, "H1": 0, "H3": 0, "H6": 0, "H9": 0}
+                for _, row in df.iterrows():
+                    result = assess_property_complexity(row["Revenue"], row["Expectation"], row["Amenities"], row["Projects"])
+                    result["Property Name"] = row["Property Name"]
+                    results.append(result)
+                    complexity_counts[result["Complexity Classification"]] += 1
+                
+                results_df = pd.DataFrame(results)
+                st.write("### Complexity Assessment Results by Property")
+                st.dataframe(results_df)
+                
+                # Calculate the most frequent complexity classification
+                avg_complexity = max(complexity_counts, key=complexity_counts.get)
+                st.write(f"### Most Common Complexity Classification for Portfolio: {avg_complexity}")
+                
+            else:
+                st.error("Uploaded file must contain the columns: Property Name, Revenue, Expectation, Amenities, Projects")
+        except Exception as e:
+            st.error(f"Error processing file: {e}")
+else:
+    st.subheader("Enter Property Details Manually")
+    property_name = st.text_input("Property Name")
+    revenue = st.number_input("Annual Revenue ($)", min_value=0, step=10000)
+    expectation = st.selectbox("Expectation Level", [
+        "Standard Service (No major escalations, normal response times)",
+        "New Client (Onboarding within 90 days, increased operational oversight)",
+        "High-Touch Service Model (Hospitality-driven OR NPS Detractor)"
+    ])
+    amenities = st.number_input("Number of Amenities", min_value=0, step=1)
+    projects = st.number_input("Number of Projects", min_value=0, step=1)
+
+    if st.button("Assess Complexity"):
+        result = assess_property_complexity(revenue, expectation, amenities, projects)
+        result["Property Name"] = property_name
+        result_df = pd.DataFrame([result])
+        st.write("### Complexity Assessment Result")
+        st.dataframe(result_df)
