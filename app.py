@@ -37,16 +37,20 @@ def assess_property_complexity(revenue, expectation, amenities, projects):
     }
     e_score = expectation_mapping.get(expectation, 1)
     
-    # Assign Amenities Score
-    if amenities <= 3:
+    # Assign Amenities Score (Allow 0 for no amenities)
+    if amenities == 0:
+        a_score = 0
+    elif 1 <= amenities <= 3:
         a_score = 1
     elif 4 <= amenities <= 5:
         a_score = 2
     else:
         a_score = 3
     
-    # Corrected Projects Score Logic
-    if projects <= 2:
+    # Assign Projects Score (Allow 0 for no projects)
+    if projects == 0:
+        p_score = 0
+    elif 1 <= projects <= 2:
         p_score = 1
     elif 3 <= projects <= 5:
         p_score = 2
