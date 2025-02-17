@@ -99,6 +99,10 @@ if input_method == "Upload Excel File":
             if all(col in df.columns for col in required_columns):
                 results = []
                 total_revenue = df["Revenue"].sum()
+                total_amenities = df["Amenities Count"].sum()
+                total_projects = df["Projects Count"].sum()
+                common_expectation = df["Expectation"].mode()[0]
+                
                 for _, row in df.iterrows():
                     result = assess_property_complexity(row["Property Name"], row["Revenue"], row["Expectation"], row["Amenities Count"], row["Projects Count"])
                     results.append(result)
@@ -123,6 +127,11 @@ if input_method == "Upload Excel File":
                 portfolio_classification = f"{portfolio_revenue_classification}{avg_complexity}"
                 
                 st.write(f"### Portfolio Classification: {portfolio_classification}")
+                st.write(f"### Portfolio Summary")
+                st.write(f"Total Revenue: ${total_revenue:,.2f}")
+                st.write(f"Total Amenities Managed: {total_amenities}")
+                st.write(f"Total Projects Managed: {total_projects}")
+                st.write(f"Most Common Expectation Level: {common_expectation}")
                 
             else:
                 st.error("Uploaded file must contain the columns: Property Name, Revenue, Expectation, Amenities Count, Projects Count")
