@@ -13,7 +13,7 @@ if missing_dependencies:
     st.error(f"Missing dependencies: {', '.join(missing_dependencies)}. Install them using `pip install {' '.join(missing_dependencies)}`.")
     st.stop()
 
-def assess_property_complexity(revenue, expectation, amenities, projects):
+def assess_property_complexity(property_name, revenue, expectation, amenities, projects):
     """
     Assess the complexity of a property based on user inputs and predefined scoring system.
     """
@@ -100,8 +100,7 @@ if input_method == "Upload Excel File":
                 results = []
                 total_revenue = df["Revenue"].sum()
                 for _, row in df.iterrows():
-                    result = assess_property_complexity(row["Revenue"], row["Expectation"], row["Amenities Count"], row["Projects Count"])
-                    result["Property Name"] = row["Property Name"]
+                    result = assess_property_complexity(row["Property Name"], row["Revenue"], row["Expectation"], row["Amenities Count"], row["Projects Count"])
                     results.append(result)
                 
                 results_df = pd.DataFrame(results)
@@ -142,7 +141,7 @@ else:
     projects = st.number_input("Number of Projects", min_value=0, step=1)
 
     if st.button("Assess Complexity"):
-        result = assess_property_complexity(revenue, expectation, amenities, projects)
+        result = assess_property_complexity(property_name, revenue, expectation, amenities, projects)
         result_df = pd.DataFrame([result])
         st.write("### Complexity Assessment Result")
         st.dataframe(result_df)
