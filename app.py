@@ -31,9 +31,9 @@ def assess_property_complexity(revenue, expectation, amenities, projects):
     
     # Assign Expectation Score
     expectation_mapping = {
-        "Standard Service (No major escalations, normal response times)": 1,
-        "New Client (Onboarding within 90 days, increased operational oversight)": 2,
-        "High-Touch Service Model (Hospitality-driven OR NPS Detractor requiring close management)": 3
+        "Standard": 1,
+        "Elevated": 2,
+        "High-Touch": 3
     }
     e_score = expectation_mapping.get(expectation, 1)
     
@@ -83,12 +83,12 @@ if input_method == "Upload Excel File":
         try:
             df = pd.read_excel(uploaded_file, engine="openpyxl")
             
-            required_columns = ["Property Name", "Revenue", "Expectation", "Amenities", "Projects"]
+            required_columns = ["Property Name", "Revenue", "Expectation", "Amenities Count", "Projects Count"]
             if all(col in df.columns for col in required_columns):
                 results = []
                 complexity_counts = {}
                 for _, row in df.iterrows():
-                    result = assess_property_complexity(row["Revenue"], row["Expectation"], row["Amenities"], row["Projects"])
+                    result = assess_property_complexity(row["Revenue"], row["Expectation"], row["Amenities Count"], row["Projects Count"])
                     result["Property Name"] = row["Property Name"]
                     results.append(result)
                     complexity_counts[result["Complexity Classification"]] = complexity_counts.get(result["Complexity Classification"], 0) + 1
@@ -102,7 +102,7 @@ if input_method == "Upload Excel File":
                 st.write(f"### Most Common Complexity Classification for Portfolio: {avg_complexity}")
                 
             else:
-                st.error("Uploaded file must contain the columns: Property Name, Revenue, Expectation, Amenities, Projects")
+                st.error("Uploaded file must contain the columns: Property Name, Revenue, Expectation, Amenities Count, Projects Count")
         except Exception as e:
             st.error(f"Error processing file: {e}")
 else:
@@ -110,9 +110,9 @@ else:
     property_name = st.text_input("Property Name")
     revenue = st.number_input("Annual Revenue ($)", min_value=0, step=10000)
     expectation = st.selectbox("Expectation Level", [
-        "Standard Service (No major escalations, normal response times)",
-        "New Client (Onboarding within 90 days, increased operational oversight)",
-        "High-Touch Service Model (Hospitality-driven OR NPS Detractor requiring close management)"
+        "Standard",
+        "Elevated",
+        "High-Touch"
     ])
     amenities = st.number_input("Number of Amenities", min_value=0, step=1)
     projects = st.number_input("Number of Projects", min_value=0, step=1)
