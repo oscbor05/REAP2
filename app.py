@@ -103,12 +103,10 @@ if input_method == "Upload Excel File":
             required_columns = ["Property Name", "Revenue", "Expectation", "Amenities Count", "Projects Count"]
             if all(col in df.columns for col in required_columns):
                 results = []
-                complexity_counts = {}
                 for _, row in df.iterrows():
                     result = assess_property_complexity(row["Revenue"], row["Expectation"], row["Amenities Count"], row["Projects Count"])
                     result["Property Name"] = row["Property Name"]
                     results.append(result)
-                    complexity_counts[result["Complexity Classification"]] = complexity_counts.get(result["Complexity Classification"], 0) + 1
                 
                 results_df = pd.DataFrame(results)
                 st.write("### Complexity Assessment Results by Property")
@@ -117,9 +115,9 @@ if input_method == "Upload Excel File":
                 # Generate and display the complexity chart
                 plot_complexity_chart(results_df)
                 
-                # Calculate the most frequent complexity classification
-                avg_complexity = max(complexity_counts, key=complexity_counts.get)
-                st.write(f"### Most Common Complexity Classification for Portfolio: {avg_complexity}")
+                # Calculate the average complexity classification
+                avg_complexity = results_df["Total Score"].mean()
+                st.write(f"### Average Complexity Score for Portfolio: {avg_complexity:.2f}")
                 
             else:
                 st.error("Uploaded file must contain the columns: Property Name, Revenue, Expectation, Amenities Count, Projects Count")
@@ -143,3 +141,6 @@ else:
         result_df = pd.DataFrame([result])
         st.write("### Complexity Assessment Result")
         st.dataframe(result_df)
+        
+        # Generate and display the complexity chart for a single property
+        plot_complexity_chart(result_df)
