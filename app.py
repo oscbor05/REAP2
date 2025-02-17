@@ -18,9 +18,9 @@ def assess_property_complexity(revenue, expectation, amenities, projects):
     Assess the complexity of a property based on user inputs and predefined scoring system.
     """
     # Assign Revenue Alpha Code
-    if revenue < 750000:
+    if revenue < 20000000:
         revenue_code = "L"
-    elif 750000 <= revenue <= 1100000:
+    elif 20000000 <= revenue <= 30000000:
         revenue_code = "M"
     else:
         revenue_code = "H"
@@ -74,7 +74,7 @@ input_method = st.radio("Select how you want to input data:", ("Manual Entry", "
 
 def plot_complexity_chart(results_df):
     """ Generate and display an XY chart mapping properties by revenue and complexity score. """
-    revenue_mapping = {"L": 500000, "M": 925000, "H": 1500000}
+    revenue_mapping = {"L": 15000000, "M": 25000000, "H": 35000000}
     
     results_df["Revenue Numeric"] = results_df["Revenue Code"].map(revenue_mapping)
     
@@ -84,10 +84,10 @@ def plot_complexity_chart(results_df):
     for i, row in results_df.iterrows():
         plt.text(row["Revenue Numeric"], row["Total Score"], row["Property Name"], fontsize=9, ha='right')
     
-    plt.xlabel("Revenue ($)")
+    plt.xlabel("Total Revenue ($)")
     plt.ylabel("Operational Management Intensity (1-9)")
     plt.title("Property Complexity Mapping")
-    plt.xticks([500000, 925000, 1500000], labels=["L ($500K)", "M ($925K)", "H ($1.5M+)"])
+    plt.xticks([15000000, 25000000, 35000000], labels=["L (<$20M)", "M ($20M-$30M)", "H (>$30M)"])
     plt.yticks(range(1, 10))
     plt.grid(True)
     st.pyplot(plt)
@@ -103,6 +103,7 @@ if input_method == "Upload Excel File":
             required_columns = ["Property Name", "Revenue", "Expectation", "Amenities Count", "Projects Count"]
             if all(col in df.columns for col in required_columns):
                 results = []
+                total_revenue = df["Revenue"].sum()
                 for _, row in df.iterrows():
                     result = assess_property_complexity(row["Revenue"], row["Expectation"], row["Amenities Count"], row["Projects Count"])
                     result["Property Name"] = row["Property Name"]
@@ -115,9 +116,19 @@ if input_method == "Upload Excel File":
                 # Generate and display the complexity chart
                 plot_complexity_chart(results_df)
                 
-                # Calculate the average complexity classification
-                avg_complexity = results_df["Total Score"].mean()
-                st.write(f"### Average Complexity Score for Portfolio: {avg_complexity:.2f}")
+                # Determine the total revenue classification
+                if total_revenue < 20000000:
+                    portfolio_revenue_classification = "L"
+                elif total_revenue <= 30000000:
+                    portfolio_revenue_classification = "M"
+                else:
+                    portfolio_revenue_classification = "H"
+                
+                # Calculate the average complexity score and round it
+                avg_complexity = round(results_df["Total Score"].mean())
+                portfolio_classification = f"{portfolio_revenue_classification}{avg_complexity}"
+                
+                st.write(f"### Portfolio Classification: {portfolio_classification}")
                 
             else:
                 st.error("Uploaded file must contain the columns: Property Name, Revenue, Expectation, Amenities Count, Projects Count")
