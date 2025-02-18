@@ -41,7 +41,7 @@ def assess_property_complexity(property_name, revenue, onboarding_status, nps_sc
         "Complexity Classification": final_classification
     }
 
-def         plot_complexity_chart(results_df):
+def plot_complexity_chart(results_df):
     """Generate and display an XY chart mapping properties by revenue and complexity score."""
     revenue_mapping = {"L": 500000, "M": 925000, "H": 1500000}
     results_df["Revenue Numeric"] = results_df["Revenue Code"].map(revenue_mapping)
@@ -114,6 +114,6 @@ if input_method == "Upload Excel File":
         
         overall_avg_score = results_df["Total Score"].mean()
         overall_avg_classification = f"{results_df['Revenue Code'].mode()[0]}{round(overall_avg_score)}"
-            st.write(f"### Portfolio Average Complexity Score: {overall_avg_classification}")
+                    st.write(f"### Portfolio Average Complexity Score: {overall_avg_classification}")
         
         plot_complexity_chart(results_df)
