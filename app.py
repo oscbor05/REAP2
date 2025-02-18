@@ -112,19 +112,24 @@ if input_method == "Upload Excel File":
     
     if uploaded_file:
         df = pd.read_excel(uploaded_file)
-        results = []
+        expected_columns = ["Property Name", "Revenue", "Onboarding Status", "NPS Score", "Hospitality Service", "Financial Acumen", "Special Assessments", "Solvency", "Investment Accounts", "Cash Accounts", "Amenities Count", "Projects Count"]
+        df.columns = df.columns.str.strip()  # Remove extra spaces in column names
         
-        for _, row in df.iterrows():
-            result = assess_property_complexity(
-                row["Property Name"], row["Revenue"], row["Onboarding Status"], row["NPS Score"],
-                row["Hospitality Service"], row["Financial Acumen"], row["Special Assessments"],
-                row["Solvency"], row["Investment Accounts"], row["Cash Accounts"], row["Amenities Count"], row["Projects Count"]
-            )
-            results.append(result)
-        
-        results_df = pd.DataFrame(results)
-        st.write("### Bulk Complexity Assessment Results")
-        st.dataframe(results_df)
-        
-        # Generate and display the complexity chart for all properties
-        plot_complexity_chart(results_df)
+        if not all(col in df.columns for col in expected_columns):
+            st.error("Uploaded file is missing required columns or has incorrect formatting.")
+        else:
+            results = []
+            for _, row in df.iterrows():
+                result = assess_property_complexity(
+                    row["Property Name"], row["Revenue"], row["Onboarding Status"], row["NPS Score"],
+                    row["Hospitality Service"], row["Financial Acumen"], row["Special Assessments"],
+                    row["Solvency"], row["Investment Accounts"], row["Cash Accounts"], row["Amenities Count"], row["Projects Count"]
+                )
+                results.append(result)
+            
+            results_df = pd.DataFrame(results)
+            st.write("### Bulk Complexity Assessment Results")
+            st.dataframe(results_df)
+            
+            # Generate and display the complexity chart for all properties
+            plot_complexity_chart(results_df)
