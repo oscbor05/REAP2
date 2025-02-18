@@ -108,6 +108,12 @@ if input_method == "Upload Excel File":
         
         results = [assess_property_complexity(**row) for _, row in df.iterrows()]
         results_df = pd.DataFrame(results)
+        
         st.write("### Complexity Assessment Results")
         st.dataframe(results_df)
+        
+        overall_avg_score = results_df["Total Score"].mean()
+        overall_avg_classification = f"{results_df['Revenue Code'].mode()[0]}{round(overall_avg_score)}"
+st.write(f"### Portfolio Average Complexity Score: {overall_avg_classification}")
+        
         plot_complexity_chart(results_df)
