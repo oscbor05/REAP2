@@ -107,24 +107,26 @@ def plot_complexity_chart(results_df):
     plt.grid(True)
     st.pyplot(plt)
 
-if input_method == "Upload Excel File":
-    uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx", "xls"])
-    
-    if uploaded_file:
-        df = pd.read_excel(uploaded_file)
-        results = []
+if input_method == "Manual Entry":
+    st.subheader("Enter Property Details Manually")
+    property_name = st.text_input("Property Name")
+    revenue = st.number_input("Annual Revenue ($)", min_value=0, step=10000)
+    onboarding_status = st.selectbox("Onboarding Status", ["Not onboarded / More than 90 days", "New Client (Onboarded within 90 days)"])
+    nps_score = st.number_input("Most Recent NPS Score", min_value=-100, max_value=100, step=1)
+    hospitality_service = st.selectbox("Is this a Hospitality-Driven Property?", ["No", "Yes"])
+    financial_acumen = st.selectbox("Financial Acumen of Management", ["Strong", "Moderate", "Weak"])
+    special_assessments = st.selectbox("Special Assessments in Last 12 Months?", ["No", "Yes"])
+    solvency = st.selectbox("Is the Association Solvent?", ["Yes", "No"])
+    investment_accounts = st.selectbox("Are There Investment Accounts to Track?", ["No", "Yes"])
+    cash_accounts = st.number_input("Number of Cash Accounts", min_value=1, step=1)
+    amenities = st.number_input("Number of Amenities", min_value=0, step=1)
+    projects = st.number_input("Number of Projects", min_value=0, step=1)
+
+    if st.button("Assess Complexity"):
+        result = assess_property_complexity(property_name, revenue, onboarding_status, nps_score, hospitality_service, financial_acumen, special_assessments, solvency, investment_accounts, cash_accounts, amenities, projects)
+        result_df = pd.DataFrame([result])
+        st.write("### Complexity Assessment Result")
+        st.dataframe(result_df)
         
-        for _, row in df.iterrows():
-            result = assess_property_complexity(
-                row["Property Name"], row["Revenue"], row["Onboarding Status"], row["NPS Score"],
-                row["Hospitality Service"], row["Financial Acumen"], row["Special Assessments"],
-                row["Solvency"], row["Investment Accounts"], row["Cash Accounts"], row["Amenities Count"], row["Projects Count"]
-            )
-            results.append(result)
-        
-        results_df = pd.DataFrame(results)
-        st.write("### Bulk Complexity Assessment Results")
-        st.dataframe(results_df)
-        
-        # Generate and display the complexity chart for all properties
-        plot_complexity_chart(results_df)
+        # Generate and display the complexity chart for a single property
+        plot_complexity_chart(result_df)
