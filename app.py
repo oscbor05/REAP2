@@ -107,29 +107,36 @@ def plot_complexity_chart(results_df):
     plt.grid(True)
     st.pyplot(plt)
 
+if input_method == "Manual Entry":
+    st.subheader("Enter Property Details Manually")
+    property_name = st.text_input("Property Name")
+    revenue = st.number_input("Annual Revenue ($)", min_value=0, step=10000)
+    onboarding_status = st.selectbox("Onboarding Status", ["Not onboarded / More than 90 days", "New Client (Onboarded within 90 days)"])
+    nps_score = st.number_input("Most Recent NPS Score", min_value=-100, max_value=100, step=1)
+    hospitality_service = st.selectbox("Is this a Hospitality-Driven Property?", ["No", "Yes"])
+    amenities = st.number_input("Number of Amenities", min_value=0, step=1)
+    projects = st.number_input("Number of Projects", min_value=0, step=1)
+    
+    if st.button("Assess Complexity"):
+        result = assess_property_complexity(property_name, revenue, onboarding_status, nps_score, hospitality_service, "Strong", "No", "Yes", "No", 1, amenities, projects)
+        result_df = pd.DataFrame([result])
+        st.write("### Complexity Assessment Result")
+        st.dataframe(result_df)
+        
+        # Generate and display the complexity chart for a single property
+        plot_complexity_chart(result_df)
+
 if input_method == "Upload Excel File":
     uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx", "xls"])
     
     if uploaded_file:
         df = pd.read_excel(uploaded_file)
-        expected_columns = ["Property Name", "Revenue", "Onboarding Status", "NPS Score", "Hospitality Service", "Financial Acumen", "Special Assessments", "Solvency", "Investment Accounts", "Cash Accounts", "Amenities Count", "Projects Count"]
-        df.columns = df.columns.str.strip()  # Remove extra spaces in column names
+        df.columns = df.columns.str.strip()
         
-        if not all(col in df.columns for col in expected_columns):
-            st.error("Uploaded file is missing required columns or has incorrect formatting.")
-        else:
-            results = []
-            for _, row in df.iterrows():
-                result = assess_property_complexity(
-                    row["Property Name"], row["Revenue"], row["Onboarding Status"], row["NPS Score"],
-                    row["Hospitality Service"], row["Financial Acumen"], row["Special Assessments"],
-                    row["Solvency"], row["Investment Accounts"], row["Cash Accounts"], row["Amenities Count"], row["Projects Count"]
-                )
-                results.append(result)
-            
-            results_df = pd.DataFrame(results)
-            st.write("### Bulk Complexity Assessment Results")
-            st.dataframe(results_df)
-            
-            # Generate and display the complexity chart for all properties
-            plot_complexity_chart(results_df)
+        results = [assess_property_complexity(*row) for _, row in df.iterrows()]
+        results_df = pd.DataFrame(results)
+        st.write("### Bulk Complexity Assessment Results")
+        st.dataframe(results_df)
+        
+        # Generate and display the complexity chart for all properties
+        plot_complexity_chart(results_df)
