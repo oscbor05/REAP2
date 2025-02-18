@@ -114,29 +114,19 @@ if input_method == "Manual Entry":
     onboarding_status = st.selectbox("Onboarding Status", ["Not onboarded / More than 90 days", "New Client (Onboarded within 90 days)"])
     nps_score = st.number_input("Most Recent NPS Score", min_value=-100, max_value=100, step=1)
     hospitality_service = st.selectbox("Is this a Hospitality-Driven Property?", ["No", "Yes"])
+    financial_acumen = st.selectbox("Financial Acumen of Management", ["Strong", "Moderate", "Weak"])
+    special_assessments = st.selectbox("Special Assessments in Last 12 Months?", ["No", "Yes"])
+    solvency = st.selectbox("Is the Association Solvent?", ["Yes", "No"])
+    investment_accounts = st.selectbox("Are There Investment Accounts to Track?", ["No", "Yes"])
+    cash_accounts = st.number_input("Number of Cash Accounts", min_value=1, step=1)
     amenities = st.number_input("Number of Amenities", min_value=0, step=1)
     projects = st.number_input("Number of Projects", min_value=0, step=1)
     
     if st.button("Assess Complexity"):
-        result = assess_property_complexity(property_name, revenue, onboarding_status, nps_score, hospitality_service, "Strong", "No", "Yes", "No", 1, amenities, projects)
+        result = assess_property_complexity(property_name, revenue, onboarding_status, nps_score, hospitality_service, financial_acumen, special_assessments, solvency, investment_accounts, cash_accounts, amenities, projects)
         result_df = pd.DataFrame([result])
         st.write("### Complexity Assessment Result")
         st.dataframe(result_df)
         
         # Generate and display the complexity chart for a single property
         plot_complexity_chart(result_df)
-
-if input_method == "Upload Excel File":
-    uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx", "xls"])
-    
-    if uploaded_file:
-        df = pd.read_excel(uploaded_file)
-        df.columns = df.columns.str.strip()
-        
-        results = [assess_property_complexity(*row) for _, row in df.iterrows()]
-        results_df = pd.DataFrame(results)
-        st.write("### Bulk Complexity Assessment Results")
-        st.dataframe(results_df)
-        
-        # Generate and display the complexity chart for all properties
-        plot_complexity_chart(results_df)
