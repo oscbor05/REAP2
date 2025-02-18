@@ -13,7 +13,7 @@ if missing_dependencies:
     st.error(f"Missing dependencies: {', '.join(missing_dependencies)}. Install them using `pip install {' '.join(missing_dependencies)}`.")
     st.stop()
 
-def assess_property_complexity(property_name, revenue, onboarding_status, service_model, financial_acumen, special_assessments, solvency, investment_accounts, cash_accounts, amenities, projects):
+def assess_property_complexity(property_name, revenue, onboarding_status, nps_score, hospitality_service, financial_acumen, special_assessments, solvency, investment_accounts, cash_accounts, amenities, projects):
     """
     Assess the complexity of a property based on user inputs and predefined scoring system.
     """
@@ -27,8 +27,9 @@ def assess_property_complexity(property_name, revenue, onboarding_status, servic
     
     # Assign Expectation Score - Operational Factors (Max 6 points)
     expectation_score_operational = 0
+    expectation_score_operational += 1 if nps_score >= 30 else 3
     expectation_score_operational += 1 if onboarding_status == "Not onboarded / More than 90 days" else 3
-    expectation_score_operational += 1 if service_model == "NPS Neutral or Standard Service" else 3
+    expectation_score_operational += 3 if hospitality_service == "Yes" else 1
     
     # Assign Expectation Score - Financial Factors (Max 6 points)
     expectation_score_financial = 0
@@ -109,7 +110,8 @@ if input_method == "Manual Entry":
     property_name = st.text_input("Property Name")
     revenue = st.number_input("Annual Revenue ($)", min_value=0, step=10000)
     onboarding_status = st.selectbox("Onboarding Status", ["Not onboarded / More than 90 days", "New Client (Onboarded within 90 days)"])
-    service_model = st.selectbox("Service Model", ["NPS Neutral or Standard Service", "High-Touch Service Model (Hospitality OR NPS Detractor)"])
+    nps_score = st.number_input("Most Recent NPS Score", min_value=-100, max_value=100, step=1)
+    hospitality_service = st.selectbox("Is this a Hospitality-Driven Property?", ["No", "Yes"])
     financial_acumen = st.selectbox("Financial Acumen of Management", ["Strong", "Moderate", "Weak"])
     special_assessments = st.selectbox("Special Assessments in Last 12 Months?", ["No", "Yes"])
     solvency = st.selectbox("Is the Association Solvent?", ["Yes", "No"])
@@ -119,7 +121,7 @@ if input_method == "Manual Entry":
     projects = st.number_input("Number of Projects", min_value=0, step=1)
 
     if st.button("Assess Complexity"):
-        result = assess_property_complexity(property_name, revenue, onboarding_status, service_model, financial_acumen, special_assessments, solvency, investment_accounts, cash_accounts, amenities, projects)
+        result = assess_property_complexity(property_name, revenue, onboarding_status, nps_score, hospitality_service, financial_acumen, special_assessments, solvency, investment_accounts, cash_accounts, amenities, projects)
         result_df = pd.DataFrame([result])
         st.write("### Complexity Assessment Result")
         st.dataframe(result_df)
