@@ -114,6 +114,6 @@ if input_method == "Upload Excel File":
         
         overall_avg_score = results_df["Total Score"].mean()
         overall_avg_classification = f"{results_df['Revenue Code'].mode()[0]}{round(overall_avg_score)}"
-st.write(f"### Portfolio Average Complexity Score: {overall_avg_classification}")
+    st.write(f"### Portfolio Average Complexity Score: {overall_avg_classification}")
         
         plot_complexity_chart(results_df)
