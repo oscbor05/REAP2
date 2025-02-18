@@ -23,11 +23,13 @@ def assess_property_complexity(property_name, revenue, onboarding_status, nps_sc
     ])
     
     expectation_score = min(round((expectation_score_operational + expectation_score_financial) / 6), 3)
+    expectation_score = max(expectation_score, 1)  # Ensure minimum EAP is 1
     
     amenities_score = 1 if amenities <= 3 else 2 if amenities <= 5 else 3
     projects_score = 1 if projects <= 2 else 2 if projects <= 5 else 3
     
     total_score = min(expectation_score + amenities_score + projects_score, 9)
+    total_score = max(total_score, 1)  # Ensure minimum total score is 1
     
     final_classification = f"{revenue_code}{total_score}"
     
