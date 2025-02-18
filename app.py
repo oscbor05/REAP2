@@ -25,32 +25,34 @@ def assess_property_complexity(property_name, revenue, onboarding_status, nps_sc
     else:
         revenue_code = "H"
     
-    # Assign Expectation Score - Operational Factors (Max 6 points)
+    # Assign Expectation Score - Operational Factors (Max 3 points each, Total Max 6)
     expectation_score_operational = 0
     expectation_score_operational += 1 if nps_score >= 30 else 3
     expectation_score_operational += 1 if onboarding_status == "Not onboarded / More than 90 days" else 3
     expectation_score_operational += 3 if hospitality_service == "Yes" else 1
+    expectation_score_operational = min(expectation_score_operational, 6)  # Cap at 6
     
-    # Assign Expectation Score - Financial Factors (Max 6 points)
+    # Assign Expectation Score - Financial Factors (Max 3 points each, Total Max 6)
     expectation_score_financial = 0
     expectation_score_financial += 1 if financial_acumen == "Strong" else 2 if financial_acumen == "Moderate" else 3
     expectation_score_financial += 1 if special_assessments == "No" else 3
     expectation_score_financial += 1 if solvency == "Yes" else 3
     expectation_score_financial += 1 if investment_accounts == "No" else 3
     expectation_score_financial += 1 if cash_accounts <= 2 else 2 if cash_accounts <= 5 else 3
+    expectation_score_financial = min(expectation_score_financial, 6)  # Cap at 6
     
-    # Total Expectation Score
-    expectation_score = expectation_score_operational + expectation_score_financial
+    # Total Expectation Score (Capped at 6)
+    expectation_score = min(expectation_score_operational + expectation_score_financial, 6)
     
     # Determine Expectation Level
-    if expectation_score <= 4:
+    if expectation_score <= 2:
         expectation_level = "Standard"
-    elif expectation_score <= 8:
+    elif expectation_score <= 4:
         expectation_level = "Elevated"
     else:
         expectation_level = "High-Touch"
     
-    # Assign Amenities Score
+    # Assign Amenities Score (Max 3 points)
     if amenities <= 3:
         a_score = 1
     elif 4 <= amenities <= 5:
@@ -58,7 +60,7 @@ def assess_property_complexity(property_name, revenue, onboarding_status, nps_sc
     else:
         a_score = 3
     
-    # Assign Projects Score
+    # Assign Projects Score (Max 3 points)
     if projects <= 2:
         p_score = 1
     elif 3 <= projects <= 5:
@@ -66,8 +68,8 @@ def assess_property_complexity(property_name, revenue, onboarding_status, nps_sc
     else:
         p_score = 3
     
-    # Total Complexity Score
-    total_score = expectation_score + a_score + p_score
+    # Total Complexity Score (Capped at 9)
+    total_score = min(expectation_score + a_score + p_score, 9)
     
     # Assign Complexity Classification
     final_classification = f"{revenue_code}{total_score}"
